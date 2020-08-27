@@ -56,9 +56,6 @@ class PptToMp4Converter:
 
     def run(self):
         with tempfile.TemporaryDirectory() as temp_path:
-            print(temp_path)
-            input()
-
             slides_path = Path(temp_path)
 
             slides = pdf2image.convert_from_path(self.pdf_path)
@@ -67,29 +64,20 @@ class PptToMp4Converter:
             ts_files = []
             
             for index, slide_image in enumerate(slides, 1):
-                try:
-                    print('Generowanie klatki', index)
-
-                    slide_mp4_path = str(slides_path / f'{index}.mp4')
-                    slide_ts_path = str(slides_path / f'{index}.ts')
-                    slide_image_path = str(slides_path / f'{index}.jpg')
-                    slide_audio_path = slides_audio[index] if index in slides_audio else None
-                    ts_files.append(slide_ts_path)
-                    
-                    if Path(slide_ts_path).exists():
-                        continue
-
-                    slide_image.save(slide_image_path)
+                slide_mp4_path = str(slides_path / f'{index}.mp4')
+                slide_ts_path = str(slides_path / f'{index}.ts')
+                slide_image_path = str(slides_path / f'{index}.jpg')
+                slide_audio_path = slides_audio[index] if index in slides_audio else None
+                ts_files.append(slide_ts_path)
                 
-                    if slide_audio_path is None:
-                        self.__create_slide_video_without_audio(slide_image_path, slide_mp4_path)
-                    else:
-                        self.__create_slide_video_with_audio(slide_image_path, slide_audio_path, slide_mp4_path)
+                slide_image.save(slide_image_path)
+            
+                if slide_audio_path is None:
+                    self.__create_slide_video_without_audio(slide_image_path, slide_mp4_path)
+                else:
+                    self.__create_slide_video_with_audio(slide_image_path, slide_audio_path, slide_mp4_path)
 
-                    self.__create_ts_file(slide_mp4_path, slide_ts_path)    
-                except Exception as e:
-                    print(f'NIE UDAŁO SIĘ WYGENEROWAĆ KLATKI {index}!')
-                    print(e)
+                self.__create_ts_file(slide_mp4_path, slide_ts_path)    
 
             self.__concatenate_videos(ts_files, self.output_path)
 
